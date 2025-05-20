@@ -18,19 +18,19 @@ ifeq ($(UNAME_S), Darwin)
 endif
 
 ifeq ($(OS), Windows_NT)
-	CFLAGS = -Iexternal/SDL2-2.32.6-mingw/include
-	LDFLAGS = -Lexternal/SDL2-2.32.6-mingw/lib -lmingw32 -lSDL2main -lSDL2
+	CFLAGS = -Iexternal/mingw/SDL2-2.32.6/include
+	LDFLAGS = -Lexternal/mingw/SDL2-2.32.6/lib -lmingw32 -lSDL2main -lSDL2
 	ONAME = cgfx.exe
 endif
 
 all: build copy-dll
 
 build:
-	$(CC) $(CFLAGS) main.c -o ${ONAME} $(LDFLAGS)
+	$(CC) $(CFLAGS) src/main.c -o ${ONAME} $(LDFLAGS)
 
 copy-dll:
 ifeq ($(OS), Windows_NT)
-	cp external/SDL2-2.32.6-mingw/bin/SDL2.dll .
+	cp external/mingw/SDL2-2.32.6/bin/SDL2.dll .
 endif
 
 clean:
