@@ -117,12 +117,13 @@ void clear_color_buffer(uint32_t* color_buffer, uint32_t color) {
 
 void render(SDL_Renderer* renderer, SDL_Texture* color_buffer_texture, uint32_t* color_buffer, uint32_t color) {
     clear_color_buffer(color_buffer, color);
-    SDL_UpdateTexture(
-        color_buffer_texture,
-        NULL,
-        color_buffer,
-        WINDOW_WIDTH * sizeof(uint32_t)
-    );
+
+    void* pixels;
+    int pitch;
+    SDL_LockTexture(color_buffer_texture, NULL, &pixels, &pitch);
+    memcpy(pixels, color_buffer, WINDOW_HEIGHT * pitch);
+    SDL_UnlockTexture(color_buffer_texture);
+
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
