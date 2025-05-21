@@ -35,11 +35,41 @@ int init_window(SDL_Window** window, SDL_Renderer** renderer) {
     return 0;
 }
 
+void process_input(int* quit) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event) != 0) {
+        switch (event.type) {
+            case SDL_QUIT:
+                *quit = 1;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void update() {
+    // TODO
+}
+
+void render(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
+}
+
 int main(int argc, char* argv[]) {
     SDL_Window* window;
     SDL_Renderer* renderer;
     if (init_window(&window, &renderer) != 0) {
         return 1;
+    }
+
+    int quit = 0;
+    while (!quit) {
+        process_input(&quit);
+        update();
+        render(renderer);
     }
 
     return 0;
