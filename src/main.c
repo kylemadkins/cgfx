@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #include <SDL2/SDL.h>
 
@@ -35,6 +37,10 @@ int init_window(SDL_Window** window, SDL_Renderer** renderer) {
     return 0;
 }
 
+void setup(uint32_t** color_buffer) {
+    *color_buffer = malloc(sizeof(uint32_t) * SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
 void process_input(int* is_running) {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
@@ -58,12 +64,24 @@ void render(SDL_Renderer* renderer) {
     SDL_RenderPresent(renderer);
 }
 
+void cleanup(uint32_t* color_buffer, SDL_Renderer* renderer, SDL_Window* window) {
+    free(color_buffer);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
 int main(int argc, char* argv[]) {
+    int32_t color = 0xff0000ff;
+
     SDL_Window* window;
     SDL_Renderer* renderer;
     if (init_window(&window, &renderer) != 0) {
         return 1;
     }
+
+    uint32_t* color_buffer;
+    setup(&color_buffer);
 
     int is_running = 1;
     while (is_running) {
@@ -71,6 +89,8 @@ int main(int argc, char* argv[]) {
         update();
         render(renderer);
     }
+
+    cleanup(color_buffer, renderer, window);
 
     return 0;
 }
