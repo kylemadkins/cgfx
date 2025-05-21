@@ -24,6 +24,7 @@ int init_window(SDL_Window** window, SDL_Renderer** renderer) {
 
     if (!*window) {
         fprintf(stderr, "Failed to create window\n%s\n", SDL_GetError());
+        SDL_Quit();
         return 1;
     }
 
@@ -31,6 +32,8 @@ int init_window(SDL_Window** window, SDL_Renderer** renderer) {
 
     if (!*renderer) {
         fprintf(stderr, "Failed to create renderer\n%s\n", SDL_GetError());
+        SDL_DestroyWindow(*window);
+        SDL_Quit();
         return 1;
     }
 
@@ -65,15 +68,13 @@ void render(SDL_Renderer* renderer) {
 }
 
 void cleanup(uint32_t* color_buffer, SDL_Renderer* renderer, SDL_Window* window) {
-    free(color_buffer);
+    if (color_buffer) free(color_buffer);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
 int main(int argc, char* argv[]) {
-    int32_t color = 0xff0000ff;
-
     SDL_Window* window;
     SDL_Renderer* renderer;
     if (init_window(&window, &renderer) != 0) {
@@ -82,6 +83,11 @@ int main(int argc, char* argv[]) {
 
     uint32_t* color_buffer;
     setup(&color_buffer);
+    if (!color_buffer) {
+        fprintf(stderr, "Failed to allocate memory for color buffer\n");
+        cleanup(color_buffer, renderer, window);
+        return 1;
+    }
 
     int is_running = 1;
     while (is_running) {
