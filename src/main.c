@@ -9,9 +9,9 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
 uint32_t random_color() {
-    uint8_t r = (uint8_t)(rand() & 0xff);
-    uint8_t g = (uint8_t)(rand() & 0xff);
-    uint8_t b = (uint8_t)(rand() & 0xff);
+    uint8_t r = rand() & 0xff;
+    uint8_t g = rand() & 0xff;
+    uint8_t b = rand() & 0xff;
     return (r << 24) | (g << 16) | (b << 8) | 0xff;
 }
 
