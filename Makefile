@@ -1,29 +1,25 @@
 UNAME_S := $(shell uname -s)
 
 CC = gcc
-CFLAGS =
-LDFLAGS =
+FLAGS =
 ONAME = cgfx
 
 ifeq ($(UNAME_S), Linux)
-	CFLAGS = -I/usr/include/SDL2
-	LDFLAGS = -lSDL2
+	FLAGS = $(shell pkg-config --cflags --libs sdl2)
 endif
 
 ifeq ($(UNAME_S), Darwin)
-	CFLAGS = -I/usr/local/include/SDL2
-	LDFLAGS = -lSDL2
+	FLAGS = $(shell pkg-config --cflags --libs sdl2)
 endif
 
 ifeq ($(OS), Windows_NT)
-	CFLAGS = -Iexternal/mingw/SDL2-2.32.6/include
-	LDFLAGS = -Lexternal/mingw/SDL2-2.32.6/lib -lmingw32 -lSDL2main -lSDL2
+	FLAGS = -Iexternal/mingw/SDL2-2.32.6/include -Lexternal/mingw/SDL2-2.32.6/lib -lmingw32 -lSDL2main -lSDL2
 endif
 
 all: build copy-dll
 
 build:
-	$(CC) $(CFLAGS) -Wall -std=c99 src/*.c -o ${ONAME} $(LDFLAGS)
+	$(CC) -Wall -std=c99 src/*.c ${FLAGS} -o ${ONAME}
 
 copy-dll:
 ifeq ($(OS), Windows_NT)
