@@ -9,15 +9,17 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
 uint32_t random_color() {
-    uint32_t rgb = ((uint32_t)rand() << 16) | ((uint32_t)rand() & 0xffff);
-    return (rgb & 0xffffff00) | 0x000000ff;
+    uint8_t r = (uint8_t)(rand() & 0xff);
+    uint8_t g = (uint8_t)(rand() & 0xff);
+    uint8_t b = (uint8_t)(rand() & 0xff);
+    return (r << 24) | (g << 16) | (b << 8) | 0xff;
 }
 
-uint8_t lerp_channel(uint8_t a, uint8_t b, float t) {
-    return (uint8_t)((1.0f - t) * a + t * b);
+uint8_t lerp(uint8_t a, uint8_t b, float t) {
+    return (uint8_t)(a + (b - a) * t);
 }
 
-uint32_t lerp(uint32_t a, uint32_t b, float t) {
+uint32_t lerp_color(uint32_t a, uint32_t b, float t) {
     uint8_t a_r = (a >> 24) & 0xff;
     uint8_t a_g = (a >> 16) & 0xff;
     uint8_t a_b = (a >> 8) & 0xff;
@@ -26,9 +28,9 @@ uint32_t lerp(uint32_t a, uint32_t b, float t) {
     uint8_t b_g = (b >> 16) & 0xff;
     uint8_t b_b = (b >> 8) & 0xff;
 
-    uint8_t r = lerp_channel(a_r, b_r, t);
-    uint8_t g = lerp_channel(a_g, b_g, t);
-    uint8_t b_ = lerp_channel(a_b, b_b, t);
+    uint8_t r = lerp(a_r, b_r, t);
+    uint8_t g = lerp(a_g, b_g, t);
+    uint8_t b_ = lerp(a_b, b_b, t);
 
     return (r << 24) | (g << 16) | (b_ << 8) | 0xff;
 }
@@ -147,7 +149,7 @@ int main(int argc, char* argv[]) {
 
     uint32_t from = random_color();
     uint32_t to = random_color();
-    float durationMs = 1000.0f;
+    float duration_ms = 2000.0f;
     uint32_t start = SDL_GetTicks();
 
     int is_running = 1;
@@ -155,9 +157,9 @@ int main(int argc, char* argv[]) {
         process_input(&is_running);
         update();
 
-        float t = (float)(SDL_GetTicks() - start) / durationMs;
+        float t = (float)(SDL_GetTicks() - start) / duration_ms;
         if (t > 1.0f) t = 1.0f;
-        uint32_t color = lerp(from, to, t);
+        uint32_t color = lerp_color(from, to, t);
         render(renderer, color_buffer_texture, color_buffer, color);
 
         if (t >= 1.0f) {
