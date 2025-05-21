@@ -35,12 +35,12 @@ int init_window(SDL_Window** window, SDL_Renderer** renderer) {
     return 0;
 }
 
-void process_input(int* quit) {
+void process_input(int* is_running) {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
         switch (event.type) {
             case SDL_QUIT:
-                *quit = 1;
+                *is_running = 0;
                 break;
             default:
                 break;
@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int quit = 0;
-    while (!quit) {
-        process_input(&quit);
+    int is_running = 1;
+    while (is_running) {
+        process_input(&is_running);
         update();
         render(renderer);
     }
