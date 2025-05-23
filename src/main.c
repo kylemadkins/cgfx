@@ -110,11 +110,9 @@ void copy_color_buffer() {
 }
 
 void draw_grid() {
-    for (int row = 0; row < window_height; row++) {
-        for (int col = 0; col < window_width; col++) {
-            if (row % 20 == 0 || col % 20 == 0) {
-                color_buffer[row * window_width + col] = 0x555555ff;
-            }
+    for (int row = 0; row < window_height; row += 10) {
+        for (int col = 0; col < window_width; col += 10) {
+            color_buffer[row * window_width + col] = 0x555555ff;
         }
     }
 }
