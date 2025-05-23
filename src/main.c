@@ -15,17 +15,18 @@ int quit = 0;
 int create_window() {
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
-
     window_width = dm.w;
     window_height = dm.h;
 
+    printf("dm w: %i, dm h: %i\n", window_width, window_height);
+
     window = SDL_CreateWindow(
         "CGFX",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
         window_width,
         window_height,
-        0
+        SDL_WINDOW_MAXIMIZED
     );
 
     if (!window) {
@@ -33,7 +34,9 @@ int create_window() {
         return 1;
     }
 
-    SDL_SetWindowPosition(window, 0, 0);
+    SDL_GetWindowSize(window, &window_width, &window_height);
+
+    printf("actual w: %i, actual h: %i\n", window_width, window_height);
 
     return 0;
 }
@@ -117,9 +120,22 @@ void draw_grid() {
     }
 }
 
+void draw_rect(int x, int y, int width, int height, uint32_t color) {
+    for (int row = y; row < y + height; row++) {
+        for (int col = x; col < x + width; col++) {
+            if (row < 0 || row >= window_height || col < 0 || col >= window_width) {
+                printf("Out of bounds write at (%d, %d)\n", col, row);
+                continue;
+            }
+            color_buffer[row * window_width + col] = color;
+        }
+    }
+}
+
 void render() {
     clear_color_buffer(0x000000ff);
     draw_grid();
+    draw_rect(window_width - 100, window_height - 100, 100, 100, 0x00ffffff);
     copy_color_buffer();
     SDL_RenderPresent(renderer);
 }
