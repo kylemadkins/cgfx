@@ -90,22 +90,7 @@ void clear_color_buffer(uint32_t* color_buffer, uint32_t color) {
 void render(SDL_Renderer* renderer, SDL_Texture* color_buffer_texture, uint32_t* color_buffer, uint32_t color) {
     clear_color_buffer(color_buffer, color);
 
-    void* pixels;
-    int pitch;
-    SDL_LockTexture(color_buffer_texture, NULL, &pixels, &pitch);
-    // Copy pixels by row because 'pitch' (the number of bytes per texture row)
-    // may include padding and is not guaranteed to equal WINDOW_WIDTH * sizeof(uint32_t).
-    // The source buffer (color_buffer) is tightly packed, so we copy only the actual
-    // pixel data per row. Casting to (uint8_t*) allows byte-wise pointer arithmetic
-    // to correctly handle the texture's row pitch.
-    for (int row = 0; row < WINDOW_HEIGHT; row++) {
-        memcpy(
-            (uint8_t*)pixels + row * pitch,
-            &color_buffer[row * WINDOW_WIDTH],
-            WINDOW_WIDTH * sizeof(uint32_t)
-        );
-    }
-    SDL_UnlockTexture(color_buffer_texture);
+    SDL_UpdateTexture(color_buffer_texture, NULL, color_buffer, WINDOW_WIDTH);
 
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
     SDL_RenderPresent(renderer);
