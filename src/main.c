@@ -18,15 +18,13 @@ int create_window() {
     window_width = dm.w;
     window_height = dm.h;
 
-    printf("dm w: %i, dm h: %i\n", window_width, window_height);
-
     window = SDL_CreateWindow(
         "CGFX",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         window_width,
         window_height,
-        SDL_WINDOW_MAXIMIZED
+        SDL_WINDOW_FULLSCREEN
     );
 
     if (!window) {
@@ -35,8 +33,6 @@ int create_window() {
     }
 
     SDL_GetWindowSize(window, &window_width, &window_height);
-
-    printf("actual w: %i, actual h: %i\n", window_width, window_height);
 
     return 0;
 }
@@ -88,6 +84,15 @@ void process_input() {
         switch (event.type) {
             case SDL_QUIT:
                 quit = 1;
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym) {
+                    case SDLK_ESCAPE:
+                        quit = 1;
+                        break;
+                    default:
+                        break;
+                }
                 break;
             default:
                 break;
