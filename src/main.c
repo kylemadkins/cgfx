@@ -14,20 +14,27 @@ SDL_Texture* color_buffer_texture = NULL;
 int quit = 0;
 
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
+    int x, y;
+    int from_x, from_y;
+    int to_x, to_y;
+    int width, height;
     uint32_t color;
 } Rect;
 int n_rects = 200;
 Rect rects[200];
+
+float duration_ms = 2000.0f;
+int start_time;
 
 uint32_t random_color() {
     uint8_t r = rand() & 0xff;
     uint8_t g = rand() & 0xff;
     uint8_t b = rand() & 0xff;
     return (r << 24) | (g << 16) | (b << 8) | 0xff;
+}
+
+int lerp(int a, int b, float t) {
+    return a + (b - a) * t;
 }
 
 int create_window() {
@@ -119,7 +126,21 @@ void process_input() {
 }
 
 void update() {
-    // TODO
+    float t = (SDL_GetTicks() - start_time) / duration_ms;
+    if (t > 1.0f) t = 1.0f;
+    for (int i = 0; i < n_rects; i++) {
+        rects[i].x = lerp(rects[i].from_x, rects[i].to_x, t);
+        rects[i].y = lerp(rects[i].from_y, rects[i].to_y, t);
+        if (t >= 1.0f) {
+            start_time = SDL_GetTicks();
+
+            rects[i].from_x = rects[i].to_x;
+            rects[i].to_x = rects[i].x + (rand() % 101) - 50;
+
+            rects[i].from_y = rects[i].to_y;
+            rects[i].to_y = rects[i].y + (rand() % 101) - 50;
+        }
+    }
 }
 
 void clear_color_buffer(uint32_t color) {
@@ -149,7 +170,6 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
     for (int row = y; row < y + height; row++) {
         for (int col = x; col < x + width; col++) {
             if (row < 0 || row >= window_height || col < 0 || col >= window_width) {
-                printf("Out of bounds write at (%d, %d)\n", col, row);
                 continue;
             }
             color_buffer[row * window_width + col] = color;
@@ -192,11 +212,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    start_time = SDL_GetTicks();
+
     for (int i = 0; i < n_rects; i++) {
-        rects[i].x = rand() % window_width;
-        rects[i].y = rand() % window_height;
-        rects[i].width = (rand() % (100 - 50 + 1)) + 50;
-        rects[i].height = (rand() % (100 - 50 + 1)) + 50;
+        int x = rand() % window_width;
+        int y = rand() % window_height;
+        rects[i].x = x;
+        rects[i].y = y;
+        rects[i].from_x = x;
+        rects[i].from_y = y;
+        rects[i].to_x = x + (rand() % 101) - 50;
+        rects[i].to_y = y + (rand() % 101) - 50;
+        rects[i].width = (rand() % 101) + 50;
+        rects[i].height = (rand() % 101) + 50;
         rects[i].color = random_color();
     }
 
