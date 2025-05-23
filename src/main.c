@@ -10,13 +10,14 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 uint32_t* color_buffer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
-int is_running = 1;
+int quit = 0;
 
-int init_window() {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        fprintf(stderr, "Couldn't initialize SDL\n%s\n", SDL_GetError());
-        return 1;
-    }
+int create_window() {
+    SDL_DisplayMode dm;
+    SDL_GetCurrentDisplayMode(0, &dm);
+
+    window_width = dm.w;
+    window_height = dm.h;
 
     window = SDL_CreateWindow(
         "CGFX",
@@ -29,16 +30,19 @@ int init_window() {
 
     if (!window) {
         fprintf(stderr, "Failed to create window\n%s\n", SDL_GetError());
-        SDL_Quit();
         return 1;
     }
 
+    SDL_SetWindowPosition(window, 0, 0);
+
+    return 0;
+}
+
+int create_renderer() {
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     if (!renderer) {
         fprintf(stderr, "Failed to create renderer\n%s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
         return 1;
     }
 
@@ -71,12 +75,16 @@ int create_color_buffer_texture() {
     return 0;
 }
 
+int init_app() {
+    return create_window() || create_renderer() || create_color_buffer() || create_color_buffer_texture();
+}
+
 void process_input() {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
         switch (event.type) {
             case SDL_QUIT:
-                is_running = 0;
+                quit = 1;
                 break;
             default:
                 break;
@@ -101,40 +109,49 @@ void copy_color_buffer() {
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
 }
 
-void render(uint32_t color) {
-    clear_color_buffer(color);
+void draw_grid() {
+    for (int row = 0; row < window_height; row++) {
+        for (int col = 0; col < window_width; col++) {
+            if (row % 20 == 0 || col % 20 == 0) {
+                color_buffer[row * window_width + col] = 0x555555ff;
+            }
+        }
+    }
+}
+
+void render() {
+    clear_color_buffer(0x000000ff);
+    draw_grid();
     copy_color_buffer();
     SDL_RenderPresent(renderer);
 }
 
+void cleanup() {
+    if (color_buffer) free(color_buffer);
+    if (color_buffer_texture) SDL_DestroyTexture(color_buffer_texture);
+    if (renderer) SDL_DestroyRenderer(renderer);
+    if (window) SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
 int main(int argc, char* argv[]) {
-    if (init_window() != 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+        fprintf(stderr, "Couldn't initialize SDL\n%s\n", SDL_GetError());
         return 1;
     }
 
-    if (
-        create_color_buffer() != 0 ||
-        create_color_buffer_texture() != 0
-    ) {
-        if (color_buffer) free(color_buffer);
-        if (color_buffer_texture) SDL_DestroyTexture(color_buffer_texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+    if (init_app() != 0) {
+        cleanup();
         return 1;
     }
 
-    while (is_running) {
+    while (!quit) {
         process_input();
         update();
-        render(0x00ffffff);
+        render();
     }
 
-    free(color_buffer);
-    SDL_DestroyTexture(color_buffer_texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    cleanup();
 
     return 0;
 }
