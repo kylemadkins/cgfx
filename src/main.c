@@ -1,39 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include <SDL2/SDL.h>
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
-
-uint32_t random_color() {
-    uint8_t r = rand() & 0xff;
-    uint8_t g = rand() & 0xff;
-    uint8_t b = rand() & 0xff;
-    return (r << 24) | (g << 16) | (b << 8) | 0xff;
-}
-
-uint8_t lerp(uint8_t a, uint8_t b, float t) {
-    return (uint8_t)(a + (b - a) * t);
-}
-
-uint32_t lerp_color(uint32_t a, uint32_t b, float t) {
-    uint8_t a_r = (a >> 24) & 0xff;
-    uint8_t a_g = (a >> 16) & 0xff;
-    uint8_t a_b = (a >> 8) & 0xff;
-
-    uint8_t b_r = (b >> 24) & 0xff;
-    uint8_t b_g = (b >> 16) & 0xff;
-    uint8_t b_b = (b >> 8) & 0xff;
-
-    uint8_t r = lerp(a_r, b_r, t);
-    uint8_t g = lerp(a_g, b_g, t);
-    uint8_t b_ = lerp(a_b, b_b, t);
-
-    return (r << 24) | (g << 16) | (b_ << 8) | 0xff;
-}
 
 int init_window(SDL_Window** window, SDL_Renderer** renderer) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -108,9 +80,9 @@ void update() {
 }
 
 void clear_color_buffer(uint32_t* color_buffer, uint32_t color) {
-    for (int y = 0; y < WINDOW_HEIGHT; y++) {
-        for (int x = 0; x < WINDOW_WIDTH; x++) {
-            color_buffer[(y * WINDOW_WIDTH) + x] = color;
+    for (int row = 0; row < WINDOW_HEIGHT; row++) {
+        for (int col = 0; col < WINDOW_WIDTH; col++) {
+            color_buffer[row * WINDOW_WIDTH + col] = color;
         }
     }
 }
@@ -121,7 +93,18 @@ void render(SDL_Renderer* renderer, SDL_Texture* color_buffer_texture, uint32_t*
     void* pixels;
     int pitch;
     SDL_LockTexture(color_buffer_texture, NULL, &pixels, &pitch);
-    memcpy(pixels, color_buffer, WINDOW_HEIGHT * pitch);
+    // Copy pixels by row because 'pitch' (the number of bytes per texture row)
+    // may include padding and is not guaranteed to equal WINDOW_WIDTH * sizeof(uint32_t).
+    // The source buffer (color_buffer) is tightly packed, so we copy only the actual
+    // pixel data per row. Casting to (uint8_t*) allows byte-wise pointer arithmetic
+    // to correctly handle the texture's row pitch.
+    for (int row = 0; row < WINDOW_HEIGHT; row++) {
+        memcpy(
+            (uint8_t*)pixels + row * pitch,
+            &color_buffer[row * WINDOW_WIDTH],
+            WINDOW_WIDTH * sizeof(uint32_t)
+        );
+    }
     SDL_UnlockTexture(color_buffer_texture);
 
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
@@ -129,8 +112,6 @@ void render(SDL_Renderer* renderer, SDL_Texture* color_buffer_texture, uint32_t*
 }
 
 int main(int argc, char* argv[]) {
-    srand((unsigned int)time(NULL));
-
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
     if (init_window(&window, &renderer) != 0) {
@@ -148,26 +129,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    uint32_t from = random_color();
-    uint32_t to = random_color();
-    float duration_ms = 2000.0f;
-    uint32_t start = SDL_GetTicks();
-
     int is_running = 1;
     while (is_running) {
         process_input(&is_running);
         update();
-
-        float t = (float)(SDL_GetTicks() - start) / duration_ms;
-        if (t > 1.0f) t = 1.0f;
-        uint32_t color = lerp_color(from, to, t);
-        render(renderer, color_buffer_texture, color_buffer, color);
-
-        if (t >= 1.0f) {
-            start = SDL_GetTicks();
-            from = to;
-            to = random_color();
-        }
+        render(renderer, color_buffer_texture, color_buffer, 0x00ffffff);
     }
 
     free(color_buffer);
