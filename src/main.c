@@ -71,8 +71,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < n_rects; i++) {
-        rects[i].pos.x = rand() % rc.width;
-        rects[i].pos.y = rand() % rc.height;
+        Vec2 pos = { rand() % rc.width, rand() % rc.height };
+        rects[i].pos = pos;
         rects[i].width = (rand() % 301) + 50;
         rects[i].height = (rand() % 301) + 50;
         rects[i].color = random_color();
