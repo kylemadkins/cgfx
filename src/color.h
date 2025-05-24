@@ -5,6 +5,4 @@
 
 typedef uint32_t Color;
 
-Color random_color();
-
 #endif

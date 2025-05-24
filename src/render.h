@@ -16,8 +16,8 @@ typedef struct {
 } RenderContext;
 
 int create_render_context(RenderContext* rc);
-void clear_color_buffer(RenderContext* rc, Color color);
-void copy_color_buffer(RenderContext* rc);
+void clear(RenderContext* rc, Color color);
+void present(RenderContext* rc);
 void draw_pixel(RenderContext* rc, int x, int y, Color color);
 void draw_rect(RenderContext* rc, int x, int y, int width, int height, Color color);
 void destroy_render_context(RenderContext* rc);

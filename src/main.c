@@ -1,23 +1,26 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include <SDL2/SDL.h>
 
 #include "render.h"
 #include "vector.h"
 #include "color.h"
 
+#define N_CUBE_POINTS 9 * 9 * 9 // 9x9x9 cube
+
 RenderContext rc;
 int quit = 0;
+Vec3 cube_points[N_CUBE_POINTS];
 
-typedef struct {
-    Vec2 pos;
-    int width, height;
-    Color color;
-} Rect;
-int n_rects = 100;
-Rect rects[100];
+void setup() {
+    int point_count = 0;
+    for (int x = -1; x <= 1; x += 0.25f) {
+        for (int y = -1; y <= 1; y += 0.25f) {
+            for (int z = -1; z <= 1; z += 0.25f) {
+                Vec3 point = { x, y, z };
+                cube_points[point_count++] = point;
+            }
+        }
+    }
+}
 
 void process_input() {
     SDL_Event event;
@@ -46,31 +49,14 @@ void update() {
 }
 
 void render(RenderContext* rc) {
-    clear_color_buffer(rc, 0x000000ff);
-
-    for (int i = 0; i < n_rects; i++) {
-        draw_rect(rc, rects[i].pos.x, rects[i].pos.y, rects[i].width, rects[i].height, rects[i].color);
-    }
-
-    copy_color_buffer(rc);
-
-    SDL_RenderPresent(rc->renderer);
+    clear(rc, 0x00ffffff);
+    present(rc);
 }
 
 int main(int argc, char* argv[]) {
-    srand(time(NULL));
-
     if (create_render_context(&rc) != 0) {
         destroy_render_context(&rc);
         return 1;
-    }
-
-    for (int i = 0; i < n_rects; i++) {
-        Vec2 pos = { rand() % rc.width, rand() % rc.height };
-        rects[i].pos = pos;
-        rects[i].width = (rand() % 301) + 50;
-        rects[i].height = (rand() % 301) + 50;
-        rects[i].color = random_color();
     }
 
     while (!quit) {

@@ -63,15 +63,16 @@ int create_render_context(RenderContext* rc) {
     return 0;
 }
 
-void clear_color_buffer(RenderContext* rc, Color color) {
+void clear(RenderContext* rc, Color color) {
     for (int i = 0; i < rc->width * rc->height; i++) {
         rc->color_buffer[i] = color;
     }
 }
 
-void copy_color_buffer(RenderContext* rc) {
+void present(RenderContext* rc) {
     SDL_UpdateTexture(rc->color_buffer_texture, NULL, rc->color_buffer, rc->width * sizeof(Color));
     SDL_RenderCopy(rc->renderer, rc->color_buffer_texture, NULL, NULL);
+    SDL_RenderPresent(rc->renderer);
 }
 
 void draw_pixel(RenderContext* rc, int x, int y, Color color) {
