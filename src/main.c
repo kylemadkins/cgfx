@@ -1,10 +1,12 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include <SDL2/SDL.h>
 
 #include "render.h"
 #include "vector.h"
+#include "color.h"
 
 RenderContext rc;
 int quit = 0;
@@ -12,17 +14,10 @@ int quit = 0;
 typedef struct {
     Vec2 pos;
     int width, height;
-    uint32_t color;
+    Color color;
 } Rect;
 int n_rects = 100;
 Rect rects[100];
-
-uint32_t random_color() {
-    uint8_t r = rand() & 0xff;
-    uint8_t g = rand() & 0xff;
-    uint8_t b = rand() & 0xff;
-    return (r << 24) | (g << 16) | (b << 8) | 0xff;
-}
 
 void process_input() {
     SDL_Event event;
