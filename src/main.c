@@ -11,11 +11,13 @@ int quit = 0;
 int n_points = 0;
 Vec3 cube_points[729]; // 9x9x9 cube
 Vec2 projected_points[729];
-int fov = 128;
+int fov = 900;
+Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
 
-// Orthographic projection
 Vec2 project(Vec3 point) {
-    Vec2 projected = { point.x * fov, point.y * fov };
+    float x = point.x / point.z * fov;
+    float y = point.y / point.z * fov;
+    Vec2 projected = { x, y };
     return projected;
 }
 
@@ -55,7 +57,9 @@ void process_input() {
 
 void update() {
     for (int i = 0; i < n_points; i++) {
-        projected_points[i] = project(cube_points[i]);
+        Vec3 cube_point = cube_points[i];
+        cube_point.z -= camera_pos.z;
+        projected_points[i] = project(cube_point);
     }
 }
 
