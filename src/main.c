@@ -10,16 +10,11 @@ RenderContext rc;
 int quit = 0;
 int n_points = 0;
 Vec3 cube_points[729]; // 9x9x9 cube
+Vec3 cube_rotation = { 0.0f, 0.0f, 0.0f };
 Vec2 projected_points[729];
-int fov = 900;
+int scale = 900.0f;
 Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
-
-Vec2 project(Vec3 point) {
-    float x = point.x / point.z * fov;
-    float y = point.y / point.z * fov;
-    Vec2 projected = { x, y };
-    return projected;
-}
+int previous_frame_ms = 0;
 
 void setup() {
     for (float x = -1.0f; x <= 1.0f; x += 0.25f) {
@@ -56,11 +51,31 @@ void process_input() {
 }
 
 void update() {
+    int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
+    if (wait_ms > 0) SDL_Delay(wait_ms);
+
+    cube_rotation.x += 0.01f;
+    cube_rotation.y += 0.01f;
+    cube_rotation.z += 0.01f;
     for (int i = 0; i < n_points; i++) {
-        Vec3 cube_point = cube_points[i];
-        cube_point.z -= camera_pos.z;
-        projected_points[i] = project(cube_point);
+        Vec3 point = cube_points[i];
+
+        // Rotate
+        Vec3 rotated = vec3_rotate_x(&point, cube_rotation.x);
+        rotated = vec3_rotate_y(&rotated, cube_rotation.y);
+        rotated = vec3_rotate_z(&rotated, cube_rotation.z);
+
+        // Translate
+        Vec3 translated = { rotated.x, rotated.y, rotated.z - camera_pos.z };
+
+        // Project
+        Vec2 projected = vec3_project(&translated);
+
+        // Scale
+        projected_points[i] = vec2_scale(&projected, scale);
     }
+
+    previous_frame_ms = SDL_GetTicks();
 }
 
 void render(RenderContext* rc) {
@@ -73,7 +88,7 @@ void render(RenderContext* rc) {
             projected_points[i].y + rc->height / 2,
             4,
             4,
-            0xffffffff
+            0xffff00ff
         );
     }
 
@@ -87,7 +102,6 @@ int main(int argc, char* argv[]) {
     }
 
     setup();
-
     while (!quit) {
         process_input();
         update();

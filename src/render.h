@@ -7,6 +7,9 @@
 
 #include "color.h"
 
+#define FPS 30
+#define MS_PER_FRAME (1000 / FPS)
+
 typedef struct {
     int width, height;
     SDL_Window* window;
