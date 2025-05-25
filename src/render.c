@@ -27,7 +27,7 @@ int create_render_context(RenderContext* rc) {
         SDL_WINDOWPOS_CENTERED,
         rc->width,
         rc->height,
-        SDL_WINDOW_FULLSCREEN
+        SDL_WINDOW_MAXIMIZED
     );
     if (!rc->window) {
         fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
