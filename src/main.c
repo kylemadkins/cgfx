@@ -1,22 +1,31 @@
+#include <stdio.h>
+
 #include <SDL2/SDL.h>
 
 #include "render.h"
 #include "vector.h"
 #include "color.h"
 
-#define N_CUBE_POINTS 9 * 9 * 9 // 9x9x9 cube
-
 RenderContext rc;
 int quit = 0;
-Vec3 cube_points[N_CUBE_POINTS];
+int n_points = 0;
+Vec3 cube_points[729]; // 9x9x9 cube
+Vec2 projected_points[729];
+int fov = 128;
+
+// Orthographic projection
+Vec2 project(Vec3 point) {
+    Vec2 projected = { point.x * fov, point.y * fov };
+    return projected;
+}
 
 void setup() {
-    int point_count = 0;
-    for (int x = -1; x <= 1; x += 0.25f) {
-        for (int y = -1; y <= 1; y += 0.25f) {
-            for (int z = -1; z <= 1; z += 0.25f) {
+    for (float x = -1.0f; x <= 1.0f; x += 0.25f) {
+        for (float y = -1.0f; y <= 1.0f; y += 0.25f) {
+            for (float z = -1.0f; z <= 1.0f; z += 0.25f) {
                 Vec3 point = { x, y, z };
-                cube_points[point_count++] = point;
+                cube_points[n_points] = point;
+                n_points += 1;
             }
         }
     }
@@ -45,11 +54,25 @@ void process_input() {
 }
 
 void update() {
-    // TODO
+    for (int i = 0; i < n_points; i++) {
+        projected_points[i] = project(cube_points[i]);
+    }
 }
 
 void render(RenderContext* rc) {
-    clear(rc, 0x00ffffff);
+    clear(rc, 0x000000ff);
+
+    for (int i = 0; i < n_points; i++) {
+        draw_rect(
+            rc,
+            projected_points[i].x + rc->width / 2,
+            projected_points[i].y + rc->height / 2,
+            4,
+            4,
+            0xffffffff
+        );
+    }
+
     present(rc);
 }
 
@@ -58,6 +81,8 @@ int main(int argc, char* argv[]) {
         destroy_render_context(&rc);
         return 1;
     }
+
+    setup();
 
     while (!quit) {
         process_input();
