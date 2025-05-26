@@ -15,8 +15,39 @@ Vec2 projected_points[729];
 int scale = 900.0f;
 Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
 int previous_frame_ms = 0;
+Color palette[] = { 0xa0c878ff, 0x143d60ff, 0xeb5b00ff };
+int palette_index = 0;
+int n_palette_colors = 3;
+Color from_color;
+Color to_color;
+int color_transition_start_ms = 0;
+const float COLOR_DURATION_MS = 2000.0f;
+
+uint8_t lerp(uint8_t a, uint8_t b, float t) {
+    return (uint8_t)(a + (b - a) * t);
+}
+
+Color lerp_color(Color a, Color b, float t) {
+    uint8_t a_r = (a >> 24) & 0xff;
+    uint8_t a_g = (a >> 16) & 0xff;
+    uint8_t a_b = (a >> 8) & 0xff;
+
+    uint8_t b_r = (b >> 24) & 0xff;
+    uint8_t b_g = (b >> 16) & 0xff;
+    uint8_t b_b = (b >> 8) & 0xff;
+
+    uint8_t r = lerp(a_r, b_r, t);
+    uint8_t g = lerp(a_g, b_g, t);
+    uint8_t b_ = lerp(a_b, b_b, t);
+
+    return (r << 24) | (g << 16) | (b_ << 8) | 0xff;
+}
 
 void setup() {
+    from_color = palette[palette_index++];
+    to_color = palette[palette_index];
+    color_transition_start_ms = SDL_GetTicks();
+
     for (float x = -1.0f; x <= 1.0f; x += 0.25f) {
         for (float y = -1.0f; y <= 1.0f; y += 0.25f) {
             for (float z = -1.0f; z <= 1.0f; z += 0.25f) {
@@ -81,6 +112,9 @@ void update() {
 void render(RenderContext* rc) {
     clear(rc, 0x000000ff);
 
+    float t = (SDL_GetTicks() - color_transition_start_ms) / COLOR_DURATION_MS;
+    if (t > 1.0f) t = 1.0f;
+
     for (int i = 0; i < n_points; i++) {
         draw_rect(
             rc,
@@ -88,8 +122,15 @@ void render(RenderContext* rc) {
             projected_points[i].y + rc->height / 2,
             4,
             4,
-            0xffff00ff
+            lerp_color(from_color, to_color, t)
         );
+    }
+
+    if (t >= 1.0f) {
+        from_color = to_color;
+        to_color = palette[palette_index++];
+        if (palette_index >= n_palette_colors) palette_index = 0;
+        color_transition_start_ms = SDL_GetTicks();
     }
 
     present(rc);
