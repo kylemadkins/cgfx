@@ -6,6 +6,7 @@
 #include "vector.h"
 #include "color.h"
 #include "mesh.h"
+#include "darray.h"
 
 RenderContext rc;
 int quit = 0;
@@ -13,7 +14,7 @@ int scale = 900.0f;
 Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
 int previous_frame_ms = 0;
 Vec3 cube_rotation = { 0.0f, 0.0f, 0.0f };
-Triangle projected_triangles[N_MESH_FACES];
+Triangle* projected_triangles;
 
 void setup() {}
 
@@ -40,6 +41,8 @@ void process_input() {
 }
 
 void update() {
+    projected_triangles = NULL;
+
     int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
     if (wait_ms > 0) SDL_Delay(wait_ms);
 
@@ -71,7 +74,7 @@ void update() {
             projected_triangle.points[j] = vec2_scale(&projected, scale);
         }
 
-        projected_triangles[i] = projected_triangle;
+        darray_push(projected_triangles, projected_triangle);
     }
 
     previous_frame_ms = SDL_GetTicks();
@@ -80,12 +83,14 @@ void update() {
 void render(RenderContext* rc) {
     clear(rc, 0x000000ff);
 
-    for (int i = 0; i < N_MESH_FACES; i++) {
+    for (int i = 0; i < darray_size(projected_triangles); i++) {
         Triangle triangle = projected_triangles[i];
 
         for (int j = 0; j < 3; j++) {
             triangle.points[j].x += rc->width / 2;
             triangle.points[j].y += rc->height / 2;
+
+            draw_rect(rc, triangle.points[j].x - 4, triangle.points[j].y - 4, 8, 8, 0x00ff00ff);
         }
 
         draw_triangle(
@@ -96,9 +101,11 @@ void render(RenderContext* rc) {
             triangle.points[1].y,
             triangle.points[2].x,
             triangle.points[2].y,
-            0xffff00ff
+            0x00ff00ff
         );
     }
+
+    darray_free(projected_triangles);
 
     present(rc);
 }
