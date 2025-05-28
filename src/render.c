@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include <SDL2/SDL.h>
 
@@ -87,6 +88,35 @@ void draw_rect(RenderContext* rc, int x, int y, int width, int height, Color col
             draw_pixel(rc, col, row, color);
         }
     }
+}
+
+void draw_line(RenderContext* rc, int x0, int y0, int x1, int y1, Color color) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+
+    int steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
+    if (steps == 0) {
+        draw_pixel(rc, x0, y0, color);
+        return;
+    }
+
+    float x_inc = dx / (float)steps;
+    float y_inc = dy / (float)steps;
+
+    float x = x0;
+    float y = y0;
+
+    for (int i = 0; i <= steps; i++) {
+        draw_pixel(rc, (int)round(x), (int)round(y), color);
+        x += x_inc;
+        y += y_inc;
+    }
+}
+
+void draw_triangle(RenderContext* rc, int x0, int y0, int x1, int y1, int x2, int y2, Color color) {
+    draw_line(rc, x0, y0, x1, y1, color);
+    draw_line(rc, x1, y1, x2, y2, color);
+    draw_line(rc, x2, y2, x0, y0, color);
 }
 
 void destroy_render_context(RenderContext* rc) {

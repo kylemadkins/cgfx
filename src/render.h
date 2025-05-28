@@ -23,6 +23,8 @@ void clear(RenderContext* rc, Color color);
 void present(RenderContext* rc);
 void draw_pixel(RenderContext* rc, int x, int y, Color color);
 void draw_rect(RenderContext* rc, int x, int y, int width, int height, Color color);
+void draw_line(RenderContext* rc, int x0, int y0, int x1, int y1, Color color);
+void draw_triangle(RenderContext* rc, int x0, int y0, int x1, int y1, int x2, int y2, Color color);
 void destroy_render_context(RenderContext* rc);
 
 #endif
