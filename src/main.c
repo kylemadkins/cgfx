@@ -5,18 +5,33 @@
 #include "render.h"
 #include "vector.h"
 #include "color.h"
+#include "triangle.h"
 #include "mesh.h"
 #include "darray.h"
 
 RenderContext rc;
+Mesh mesh;
 int quit = 0;
 int scale = 900.0f;
 Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
 int previous_frame_ms = 0;
-Vec3 cube_rotation = { 0.0f, 0.0f, 0.0f };
 Triangle* projected_triangles;
 
-void setup() {}
+int setup() {
+    if (create_render_context(&rc) != 0) {
+        destroy_render_context(&rc);
+        return 1;
+    }
+
+    load_cube(&mesh);
+
+    return 0;
+}
+
+void cleanup() {
+    destroy_render_context(&rc);
+    destroy_mesh(&mesh);
+}
 
 void process_input() {
     SDL_Event event;
@@ -47,13 +62,13 @@ void update() {
     int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
     if (wait_ms > 0) SDL_Delay(wait_ms);
 
-    cube_rotation.x += 0.01f;
-    cube_rotation.y += 0.01f;
-    cube_rotation.z += 0.01f;
+    mesh.rotation.x += 0.01f;
+    mesh.rotation.y += 0.01f;
+    mesh.rotation.z += 0.01f;
 
-    for (int i = 0; i < N_MESH_FACES; i++) {
-        Face face = mesh_faces[i];
-        Vec3 face_vertices[] = { mesh_vertices[face.a], mesh_vertices[face.b], mesh_vertices[face.c] };
+    for (int i = 0; i < darray_size(mesh.faces); i++) {
+        Face face = mesh.faces[i];
+        Vec3 face_vertices[] = { mesh.vertices[face.a], mesh.vertices[face.b], mesh.vertices[face.c] };
 
         Triangle projected_triangle;
 
@@ -61,9 +76,9 @@ void update() {
             Vec3 vertex = face_vertices[j];
 
             // Rotate
-            Vec3 rotated = vec3_rotate_x(&vertex, cube_rotation.x);
-            rotated = vec3_rotate_y(&rotated, cube_rotation.y);
-            rotated = vec3_rotate_z(&rotated, cube_rotation.z);
+            Vec3 rotated = vec3_rotate_x(&vertex, mesh.rotation.x);
+            rotated = vec3_rotate_y(&rotated, mesh.rotation.y);
+            rotated = vec3_rotate_z(&rotated, mesh.rotation.z);
 
             // Translate
             Vec3 translated = { rotated.x, rotated.y, rotated.z - camera_pos.z };
@@ -110,19 +125,13 @@ void render(RenderContext* rc) {
 }
 
 int main(int argc, char* argv[]) {
-    if (create_render_context(&rc) != 0) {
-        destroy_render_context(&rc);
-        return 1;
-    }
-
-    setup();
+    if (setup() != 0) return 1;
     while (!quit) {
         process_input();
         update();
         render(&rc);
     }
-
-    destroy_render_context(&rc);
+    cleanup();
 
     return 0;
 }

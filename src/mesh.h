@@ -3,17 +3,16 @@
 
 #include "vector.h"
 
-#define N_MESH_VERTICES 8
-#define N_MESH_FACES 12
-
 typedef struct {
     int a, b, c;
 } Face;
 typedef struct {
-    Vec2 points[3];
-} Triangle;
+    Vec3* vertices;
+    Face* faces;
+    Vec3 rotation;
+} Mesh;
 
-extern Vec3 mesh_vertices[N_MESH_VERTICES];
-extern Face mesh_faces[N_MESH_FACES];
+void load_cube(Mesh* mesh);
+void destroy_mesh(Mesh* mesh);
 
 #endif
