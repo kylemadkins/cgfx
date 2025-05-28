@@ -90,6 +90,7 @@ void draw_rect(RenderContext* rc, int x, int y, int width, int height, Color col
     }
 }
 
+// Digital differential analyzer (DDA)
 void draw_line(RenderContext* rc, int x0, int y0, int x1, int y1, Color color) {
     int dx = x1 - x0;
     int dy = y1 - y0;
