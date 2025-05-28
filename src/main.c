@@ -41,6 +41,7 @@ void process_input() {
 }
 
 void update() {
+    darray_free(projected_triangles);
     projected_triangles = NULL;
 
     int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
@@ -104,8 +105,6 @@ void render(RenderContext* rc) {
             0x00ff00ff
         );
     }
-
-    darray_free(projected_triangles);
 
     present(rc);
 }
