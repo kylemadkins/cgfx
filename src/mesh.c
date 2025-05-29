@@ -1,36 +1,39 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "mesh.h"
 #include "darray.h"
 
-void load_cube(Mesh* mesh) {
-    int n_vertices = 8;
-    Vec3 vertices[] = {
-        { -1.0f, -1.0f, -1.0f },
-        { 1.0f, -1.0f, -1.0f },
-        { -1.0f, 1.0f, -1.0f },
-        { 1.0f, 1.0f, -1.0f },
-        { -1.0f, -1.0f, 1.0f },
-        { 1.0f, -1.0f, 1.0f },
-        { -1.0f, 1.0f, 1.0f },
-        { 1.0f, 1.0f, 1.0f }
-    };
+int load_obj(Mesh* mesh, char* file_path) {
+    FILE *file;
+    char line[256];
+    int offset;
+    char type[8];
+    float x, y, z;
+    int a, b, c;
 
-    int n_faces = 12;
-    Face faces[] = {
-        { 0, 1, 2 }, { 1, 3, 2 }, // front
-        { 5, 4, 7 }, { 4, 6, 7 }, // back
-        { 4, 0, 6 }, { 0, 2, 6 }, // left
-        { 1, 5, 3 }, { 5, 7, 3 }, // right
-        { 2, 3, 6 }, { 3, 7, 6 }, // top
-        { 4, 5, 0 }, { 5, 1, 0 } // bottom
-    };
-
-    for (int i = 0; i < n_vertices; i++) {
-        darray_push(mesh->vertices, vertices[i]);
+    file = fopen(file_path, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Failed to read file %s\n", file_path);
+        return 1;
     }
 
-    for (int i = 0; i < n_faces; i++) {
-        darray_push(mesh->faces, faces[i]);
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (sscanf(line, "%s %n", type, &offset) == 1) {
+            char* rest = line + offset;
+            if (strcmp(type, "v") == 0) {
+                sscanf(rest, "%f %f %f", &x, &y, &z);
+                Vec3 vertex = { x, y, z };
+                darray_push(mesh->vertices, vertex);
+            } else if (strcmp(type, "f") == 0) {
+                sscanf(rest, "%i/%*i/%*i %i/%*i/%*i %i/%*i/%*i", &a, &b, &c);
+                Face face = { a - 1, b - 1, c - 1 }; // Convert to zero-based indexing
+                darray_push(mesh->faces, face);
+            }
+        }
     }
+
+    return 0;
 }
 
 void destroy_mesh(Mesh* mesh) {

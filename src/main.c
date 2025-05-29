@@ -13,7 +13,7 @@ RenderContext rc;
 Mesh mesh;
 int quit = 0;
 int scale = 900.0f;
-Vec3 camera_pos = { 0.0f, 0.0f, -5.0f };
+Vec3 camera_pos = { 0.0f, 0.0f, -10.0f };
 int previous_frame_ms = 0;
 Triangle* projected_triangles;
 
@@ -23,7 +23,7 @@ int setup() {
         return 1;
     }
 
-    load_cube(&mesh);
+    load_obj(&mesh, "models/squirtle.obj");
 
     return 0;
 }
@@ -62,9 +62,7 @@ void update() {
     int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
     if (wait_ms > 0) SDL_Delay(wait_ms);
 
-    mesh.rotation.x += 0.01f;
-    mesh.rotation.y += 0.01f;
-    mesh.rotation.z += 0.01f;
+    mesh.rotation.y += 0.02f;
 
     for (int i = 0; i < darray_size(mesh.faces); i++) {
         Face face = mesh.faces[i];

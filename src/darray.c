@@ -1,6 +1,5 @@
 /*
 darray.c is a fork of https://github.com/zauonlok/renderer/blob/master/renderer/core/darray.c
-darray.c is under the following license:
 ------------------------------------------------------------------------------
 MIT License
 

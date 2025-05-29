@@ -12,7 +12,7 @@ typedef struct {
     Vec3 rotation;
 } Mesh;
 
-void load_cube(Mesh* mesh);
+int load_obj(Mesh* mesh, char* file_path);
 void destroy_mesh(Mesh* mesh);
 
 #endif
