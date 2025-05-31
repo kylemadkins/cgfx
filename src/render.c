@@ -17,18 +17,18 @@ int create_render_context(RenderContext* rc) {
     }
     sdl_initialized = 1;
 
-    SDL_DisplayMode dm;
-    SDL_GetCurrentDisplayMode(0, &dm);
-    rc->width = dm.w;
-    rc->height = dm.h;
+    // SDL_DisplayMode dm;
+    // SDL_GetCurrentDisplayMode(0, &dm);
+    // rc->width = dm.w;
+    // rc->height = dm.h;
 
     rc->window = SDL_CreateWindow(
         "CGFX",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        rc->width,
-        rc->height,
-        SDL_WINDOW_MAXIMIZED
+        1280,
+        960,
+        0
     );
     if (!rc->window) {
         fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());

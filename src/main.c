@@ -23,7 +23,9 @@ int setup() {
         return 1;
     }
 
-    load_obj(&mesh, "models/f22.obj");
+    load_obj(&mesh, "models/squirtle.obj");
+
+    mesh.rotation.y = 135.0f;
 
     return 0;
 }
@@ -62,9 +64,9 @@ void update() {
     int wait_ms = MS_PER_FRAME - (SDL_GetTicks() - previous_frame_ms);
     if (wait_ms > 0) SDL_Delay(wait_ms);
 
-    mesh.rotation.x += 0.02f;
-    mesh.rotation.y += 0.02f;
-    mesh.rotation.z += 0.02f;
+    // mesh.rotation.x += 0.02f;
+    // mesh.rotation.y += 0.02f;
+    // mesh.rotation.z += 0.02f;
 
     for (int i = 0; i < darray_size(mesh.faces); i++) {
         Face face = mesh.faces[i];
